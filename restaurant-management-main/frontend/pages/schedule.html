@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quản lý Lịch làm</title>
+  <link rel="stylesheet" href="../sidebar.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #e9f1fb;
+      margin-left: 50px;
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .main-content {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    #searchSchedule {
+      display: block;
+      margin: 0 auto 20px auto;
+      padding: 10px;
+      width: 70%;
+      margin-left: 200px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+
+    #toggleFormBtn {
+      display: block;
+      background-color: #2ecc71;
+      color: white;
+      padding: 10px 25px;
+      border-radius: 25px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      margin-left: 500px;
+      margin: 0 auto 30px auto;
+    }
+
+    #toggleFormBtn:hover {
+      background-color: #27ae60;
+    }
+
+    table {
+      width: 1200px;
+      border-collapse: separate;
+      border-spacing: 0 15px;
+    }
+
+    th {
+      background-color: #3498db;
+      color: white;
+      padding: 12px;
+      text-align: center;
+      border-radius: 12px 12px 0 0;
+    }
+
+    td {
+      background-color: white;
+      padding: 12px;
+      text-align: center;
+      border-radius: 0 0 12px 12px;
+    }
+
+    tbody tr {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    tbody tr:nth-child(even) td {
+      background-color: #f0f4f9;
+    }
+
+    #addScheduleSection {
+      background-color: white;
+      padding: 20px;
+      margin-left: 200px;
+      border-radius: 20px;
+      margin-top: 30px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      display: none;
+    }
+
+    #addScheduleSection h2 {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    #addScheduleForm {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    #addScheduleForm input,
+    #addScheduleForm select {
+      padding: 10px;
+      
+      width: 200px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+
+    #addScheduleForm button {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #addScheduleForm button:hover {
+      background-color: #2980b9;
+    }
+
+    .btn-delete {
+      background-color: #e74c3c;
+      color: white;
+      padding: 5px 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .error-message {
+      color: red;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+
+  <div class="main-content">
+ 
+    <input type="text" id="searchSchedule" placeholder="🔍 Tìm theo tên nhân viên..." />
+
+    <button id="toggleFormBtn">➕ Thêm Lịch Làm</button>
+    <section id="addScheduleSection">
+      <h2>➕ Thêm Lịch Làm Mới</h2>
+      <form id="addScheduleForm">
+        <select id="nhanVienSelect" required>
+          <option value="">-- Chọn nhân viên --</option>
+        </select>
+        <select id="ca" required>
+          <option value="">-- Chọn ca --</option>
+          <option value="Sáng">Sáng</option>
+          <option value="Chiều">Chiều</option>
+          <option value="Tối">Tối</option>
+        </select>
+        <input type="date" id="ngay" required />
+        <input type="number" id="soGioLam" placeholder="Số giờ làm" required />
+        <button type="submit">Thêm</button>
+      </form>
+      <div class="error-message"></div>
+    </section>
+    <table id="scheduleTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tên nhân viên</th>
+          <th>Ca</th>
+          <th>Ngày</th>
+          <th>Số giờ làm</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody id="scheduleBody">
+        <tr><td colspan="6">Đang tải dữ liệu...</td></tr>
+      </tbody>
+    </table>
+
+    
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const tbody = document.getElementById("scheduleBody");
+      const searchInput = document.getElementById("searchSchedule");
+      const errorDiv = document.querySelector(".error-message");
+      const toggleFormBtn = document.getElementById("toggleFormBtn");
+      const addScheduleSection = document.getElementById("addScheduleSection");
+      const addScheduleForm = document.getElementById("addScheduleForm");
+
+      // Load sidebar
+      fetch('../sidebar.html')
+        .then(res => res.text())
+        .then(html => {
+          document.getElementById('sidebar-container').innerHTML = html;
+          const basePath = window.location.pathname.includes('/pages/') ? '../' : './';
+          document.querySelectorAll('.sidebar a').forEach(link => {
+            const href = link.getAttribute('data-href');
+            if (href) link.setAttribute('href', basePath + href);
+          });
+        });
+
+      toggleFormBtn.addEventListener("click", () => {
+        addScheduleSection.style.display =
+          addScheduleSection.style.display === "none" || addScheduleSection.style.display === ""
+            ? "block"
+            : "none";
+      });
+
+      function loadNhanVienList() {
+        fetch('/api/employees/')
+          .then(res => res.json())
+          .then(data => {
+            const select = document.getElementById("nhanVienSelect");
+            select.innerHTML = '<option value="">-- Chọn nhân viên --</option>';
+            data.forEach(nv => {
+              const option = document.createElement("option");
+              option.value = nv.NhanVienID;
+              option.textContent = nv.HoTenNhanVien;
+              select.appendChild(option);
+            });
+          })
+          .catch(err => {
+            console.error("Lỗi khi tải danh sách nhân viên:", err);
+            alert("Không thể tải danh sách nhân viên");
+          });
+      }
+
+      function fetchSchedules() {
+        fetch('/api/lichlam/')
+          .then(res => res.json())
+          .then(renderSchedules)
+          .catch(err => {
+            console.error("Lỗi:", err);
+            tbody.innerHTML = '<tr><td colspan="6" class="error">Không thể tải dữ liệu</td></tr>';
+          });
+      }
+
+      function renderSchedules(data) {
+        tbody.innerHTML = '';
+        if (!data.length) {
+          tbody.innerHTML = '<tr><td colspan="6">Không có dữ liệu</td></tr>';
+          return;
+        }
+
+        data.forEach(item => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${item.LichLamID}</td>
+            <td>${item.HoTenNhanVien}</td>
+            <td>${item.Ca}</td>
+            <td>${formatDate(item.Ngay)}</td>
+            <td>${item.SoGioLam}</td>
+            <td><button class="btn-delete" onclick="deleteSchedule(${item.LichLamID})">Xoá</button></td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+
+      function formatDate(ngayStr) {
+        const date = new Date(ngayStr);
+        return isNaN(date) ? "Không rõ" : date.toLocaleDateString('vi-VN');
+      }
+
+      window.deleteSchedule = function(id) {
+        if (confirm("Bạn có chắc muốn xoá lịch làm này?")) {
+          fetch(`/api/lichlam/${id}`, { method: 'DELETE' })
+            .then(res => res.json())
+            .then(data => {
+              alert(data.message);
+              fetchSchedules();
+            });
+        }
+      };
+
+      searchInput.addEventListener("input", () => {
+        const keyword = searchInput.value.trim();
+        if (keyword.length >= 2) {
+          fetch(`/api/lichlam/search?ten=${encodeURIComponent(keyword)}`)
+            .then(res => res.json())
+            .then(renderSchedules);
+        } else {
+          fetchSchedules();
+        }
+      });
+
+      addScheduleForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const nhanVienID = document.getElementById("nhanVienSelect").value;
+        const ca = document.getElementById("ca").value;
+        const ngay = document.getElementById("ngay").value;
+        const soGio = document.getElementById("soGioLam").value;
+        errorDiv.textContent = '';
+
+        fetch('/api/lichlam/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            NhanVienID: nhanVienID,
+            Ca: ca,
+            Ngay: ngay,
+            SoGioLam: soGio
+          })
+        })
+          .then(res => res.json().then(data => ({ status: res.status, body: data })))
+          .then(result => {
+            if (result.status === 201) {
+              alert(result.body.message);
+              addScheduleForm.reset();
+              addScheduleSection.style.display = "none";
+              fetchSchedules();
+            } else {
+              errorDiv.textContent = result.body.message || "Không thể tạo lịch";
+            }
+          })
+          .catch(err => {
+            console.error("Lỗi khi thêm:", err);
+            errorDiv.textContent = "Lỗi kết nối hoặc server.";
+          });
+      });
+
+      // Khởi động
+      loadNhanVienList();
+      fetchSchedules();
+    });
+  </script>
+</body>
+</html>

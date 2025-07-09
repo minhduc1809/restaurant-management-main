@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quản lý Đặt bàn</title>
+  <link rel="stylesheet" href="../sidebar.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #e9f1fb;
+      margin-left: 50px;
+      padding: 30px;
+    }
+    h1 {
+      font-size: 28px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .main-content {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    #searchReservation {
+      display: block;
+      margin: 0 auto 20px auto;
+      padding: 10px;
+      width: 250px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+    #toggleForm {
+      display: block;
+      background-color: #2ecc71;
+      color: white;
+      padding: 10px 25px;
+      border-radius: 25px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 0 auto 20px auto;
+      transition: all 0.3s ease;
+    }
+    #toggleForm:hover {
+      background-color: #27ae60;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
+    }
+    #formContainer {
+      display: none;
+      background: white;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 30px auto;
+    }
+    #formContainer label {
+      display: block;
+      margin: 10px auto;
+      text-align: left;
+      max-width: 400px;
+    }
+    #formContainer input, #formContainer select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+    #formContainer button {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: all 0.3s ease;
+    }
+    #formContainer button:hover {
+      background-color: #2980b9;
+      transform: translateY(-2px);
+    }
+    table {
+      width: 1200px;
+      border-collapse: separate;
+      border-spacing: 0 15px;
+    }
+    th {
+      background-color: #3498db;
+      color: white;
+      padding: 12px;
+      text-align: center;
+      border-radius: 12px 12px 0 0;
+    }
+    td {
+      background-color: white;
+      padding: 15px;
+      text-align: center;
+      border-radius: 0 0 12px 12px;
+    }
+    tbody tr {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
+    tbody tr:nth-child(even) td {
+      background-color: #f0f4f9;
+    }
+    .trang-thai-da-dat {
+      background-color: #e3f2fd !important;
+      color: #1976d2;
+      font-weight: bold;
+      border-radius: 8px;
+      padding: 8px;
+    }
+    .trang-thai-dang-su-dung {
+      background-color: #ffebee !important;
+      color: #c62828;
+      font-weight: bold;
+      border-radius: 8px;
+      padding: 8px;
+    }
+    .trang-thai-sap-trong {
+      background-color: #fff3e0 !important;
+      color: #ef6c00;
+      font-weight: bold;
+      border-radius: 8px;
+      padding: 8px;
+    }
+    .trang-thai-trong {
+      background-color: #e8f5e8 !important;
+      color: #2e7d32;
+      font-weight: bold;
+      border-radius: 8px;
+      padding: 8px;
+    }
+    .countdown {
+      font-size: 0.8em;
+      display: block;
+      margin-top: 4px;
+      opacity: 0.8;
+    }
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      z-index: 1000;
+      display: none;
+      min-width: 300px;
+    }
+    .toast.success { background-color: #4caf50; }
+    .toast.error { background-color: #f44336; }
+    .toast.show {
+      display: block;
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 10px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    button.dat-tiep {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 10px;
+      background-color: #ff9800;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button.dat-tiep:hover {
+      background-color: #f57c00;
+    }
+    .time-hint {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 5px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+
+  <div class="main-content">
+    
+
+    <input type="text" id="searchReservation" placeholder="🔍 Tìm theo tên khách..." />
+
+    <button id="toggleForm">➕ Thêm lượt đặt bàn</button>
+
+    <div id="formContainer">
+      <h2>➕ Thêm lượt đặt bàn</h2>
+      <form id="bookingForm">
+        <label>Tên khách hàng:
+          <input type="text" name="HoTenKhachHang" required placeholder="Nhập tên khách hàng" />
+        </label>
+        <label>Thời gian đặt:
+          <input type="datetime-local" name="ThoiGianDat" required />
+          <div class="time-hint">
+            ⏰ Lưu ý: Mỗi lượt đặt sẽ sử dụng bàn trong 3 tiếng. Các lượt đặt cùng bàn phải cách nhau ít nhất 3 tiếng.
+          </div>
+        </label>
+        <label>Chọn số bàn:
+          <select name="SoBan" id="soBanSelect" required>
+            <option value="">-- Chọn bàn --</option>
+          </select>
+        </label>
+        <button type="submit" id="submitBtn">
+          <span id="submitText">Đặt bàn ngay</span>
+        </button>
+      </form>
+    </div>
+
+    <table id="reservationTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tên khách hàng</th>
+          <th>Ngày đặt</th>
+          <th>Giờ</th>
+          <th>Số bàn</th>
+          <th>Trạng thái</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="7">Đang tải dữ liệu...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    let danhSachDatBan = [];
+    let danhSachBanAn = [];
+
+    fetch('../sidebar.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('sidebar-container').innerHTML = html;
+        const basePath = window.location.pathname.includes('/pages/') ? '../' : './';
+        document.querySelectorAll('.sidebar a').forEach(link => {
+          const href = link.getAttribute('data-href');
+          if (href) link.setAttribute('href', basePath + href);
+        });
+      });
+
+    function hienThiThongBao(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast ${type} show`;
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function chuyenDoiThoiGianVietNam(dateString, timeString) {
+      try {
+        const [ngay, thang, nam] = dateString.split('/');
+        const [gio, phut] = timeString.split(':');
+        return new Date(parseInt(nam), parseInt(thang) - 1, parseInt(ngay), parseInt(gio), parseInt(phut));
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function tinhTrangThaiBan(thoiGianDat) {
+      const now = new Date();
+      const thoiGianKetThuc = new Date(thoiGianDat.getTime() + 3 * 60 * 60 * 1000); // +3 giờ
+      const soGio = (now - thoiGianDat) / (1000 * 60 * 60);
+      
+      if (now < thoiGianDat) {
+        // Chưa đến giờ đặt -> Đã đặt
+        const phutConLai = Math.ceil((thoiGianDat - now) / (1000 * 60));
+        const h = Math.floor(phutConLai / 60);
+        const m = phutConLai % 60;
+        return {
+          trangThai: 'Đã đặt',
+          className: 'trang-thai-da-dat',
+          countdown: `Còn ${h > 0 ? h + 'h ' : ''}${m}p nữa`
+        };
+      } else if (now >= thoiGianDat && now < thoiGianKetThuc) {
+        // Đang trong thời gian sử dụng (3 tiếng)
+        const phutConLai = Math.ceil((thoiGianKetThuc - now) / (1000 * 60));
+        
+        if (phutConLai <= 30) {
+          // Sắp kết thúc (30 phút cuối)
+          const h = Math.floor(phutConLai / 60);
+          const m = phutConLai % 60;
+          return {
+            trangThai: 'Sắp trống',
+            className: 'trang-thai-sap-trong',
+            countdown: `${Math.max(phutConLai, 0)} phút nữa`
+          };
+        } else {
+          // Đang sử dụng
+          const h = Math.floor(phutConLai / 60);
+          const m = phutConLai % 60;
+          return {
+            trangThai: 'Đang sử dụng',
+            className: 'trang-thai-dang-su-dung',
+            countdown: `Còn ${h > 0 ? h + 'h ' : ''}${m}p`
+          };
+        }
+      } else {
+        // Đã qua 3 tiếng -> Trống
+        return {
+          trangThai: 'Trống',
+          className: 'trang-thai-trong',
+          countdown: ''
+        };
+      }
+    }
+
+    function capNhatTrangThaiBan() {
+      document.querySelectorAll('#reservationTable tbody tr').forEach(row => {
+        const cells = row.cells;
+        if (cells.length < 6) return;
+
+        const thoiGianDat = chuyenDoiThoiGianVietNam(cells[2].innerText, cells[3].innerText);
+        const oTrangThai = cells[5];
+        if (!thoiGianDat) return;
+
+        const trangThai = tinhTrangThaiBan(thoiGianDat);
+        oTrangThai.className = '';
+        oTrangThai.classList.add(trangThai.className);
+        
+        if (trangThai.countdown) {
+          oTrangThai.innerHTML = `${trangThai.trangThai}<span class="countdown">${trangThai.countdown}</span>`;
+        } else {
+          oTrangThai.textContent = trangThai.trangThai;
+        }
+      });
+    }
+    // Gọi cập nhật trạng thái bàn từ server
+function goiCapNhatTrangThaiBanServer() {
+  fetch('/api/banan/cap-nhat-trang-thai', {
+    method: 'POST'
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log('🟢 Cập nhật trạng thái:', data.message);
+
+      // Gọi thêm GET nếu muốn lấy lại danh sách bàn (tuỳ trường hợp)
+      // fetchDanhSachBan();
+    })
+    .catch(error => {
+      console.error('🔴 Lỗi khi cập nhật trạng thái bàn:', error);
+    });
+}
+
+    async function layDanhSachDatBan(tuKhoa = '') {
+      try {
+        const res = await fetch(`/api/bookings?search=${encodeURIComponent(tuKhoa)}`);
+        const data = await res.json();
+        danhSachDatBan = data;
+        hienThiDanhSachDatBan(data);
+        setTimeout(capNhatTrangThaiBan, 100);
+      } catch (err) {
+        hienThiThongBao('❌ Lỗi khi tải danh sách đặt bàn', 'error');
+      }
+    }
+
+    async function xoaDatBan(luotDatBanId) {
+      if (!confirm('Bạn có chắc chắn muốn hủy lượt đặt bàn này?')) return;
+      
+      try {
+        const res = await fetch(`/api/bookings/${luotDatBanId}`, {
+          method: 'DELETE'
+        });
+        
+        if (res.ok) {
+          hienThiThongBao('✅ Hủy lượt đặt bàn thành công!');
+          layDanhSachDatBan();
+        } else {
+          const err = await res.json();
+          hienThiThongBao(`❌ ${err.message || 'Lỗi khi hủy đặt bàn'}`, 'error');
+        }
+      } catch (err) {
+        hienThiThongBao('❌ Kết nối thất bại', 'error');
+      }
+    }
+
+    function hienThiDanhSachDatBan(ds) {
+      const tbody = document.querySelector('#reservationTable tbody');
+      tbody.innerHTML = '';
+      if (ds.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7">Không có dữ liệu đặt bàn</td></tr>';
+        return;
+      }
+
+      ds.forEach(item => {
+        const thoiGian = new Date(item.ThoiGianDat);
+        tbody.innerHTML += `
+        <tr>
+          <td>${item.LuotDatBanID}</td>
+          <td>${item.HoTenKhachHang}</td>
+          <td>${thoiGian.toLocaleDateString('vi-VN')}</td>
+          <td>${thoiGian.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</td>
+          <td>Bàn ${item.SoBan}</td>
+          <td class="trang-thai-dang-su-dung">Đang xử lý...</td>
+          <td>
+            <button onclick="xoaDatBan(${item.LuotDatBanID})" 
+                    style="background-color: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
+              🗑️ Hủy
+            </button>
+          </td>
+        </tr>`;
+      });
+    }
+
+    async function layDanhSachBanAn() {
+      try {
+        const res = await fetch('/api/banan');
+        const data = await res.json();
+        danhSachBanAn = data;
+        const select = document.getElementById('soBanSelect');
+        select.innerHTML = '<option value="">-- Chọn bàn --</option>';
+        data.forEach(b => {
+          select.innerHTML += `<option value="${b.SoBan}">Bàn ${b.SoBan}</option>`;
+        });
+      } catch (err) {
+        hienThiThongBao('❌ Lỗi khi tải danh sách bàn', 'error');
+      }
+    }
+
+    document.getElementById('searchReservation').addEventListener('input', e => {
+      layDanhSachDatBan(e.target.value.trim());
+    });
+
+    document.getElementById('toggleForm').addEventListener('click', () => {
+      const form = document.getElementById('formContainer');
+      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+      
+      // Đặt thời gian mặc định là 1 giờ sau thời gian hiện tại
+      const defaultTime = new Date();
+      defaultTime.setHours(defaultTime.getHours() + 1);
+      defaultTime.setMinutes(0); // Làm tròn về phút 0
+      document.querySelector('input[name="ThoiGianDat"]').value = defaultTime.toISOString().slice(0, 16);
+    });
+
+    document.getElementById('bookingForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      const text = document.getElementById('submitText');
+      
+      const formData = new FormData(e.target);
+      const duLieu = Object.fromEntries(formData.entries());
+      const thoiGian = new Date(duLieu.ThoiGianDat);
+      
+      if (thoiGian <= new Date()) {
+        hienThiThongBao('❌ Thời gian đặt phải sau hiện tại', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      text.innerHTML = '<span class="loading"></span>Đang xử lý...';
+
+      try {
+        const res = await fetch('/api/bookings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            HoTenKhachHang: duLieu.HoTenKhachHang,
+            ThoiGianDat: duLieu.ThoiGianDat,
+            SoBan: duLieu.SoBan
+          })
+        });
+
+        if (res.ok) {
+          hienThiThongBao('✅ Đặt bàn thành công!');
+          e.target.reset();
+          document.getElementById('formContainer').style.display = 'none';
+          layDanhSachDatBan();
+        } else {
+          const err = await res.json();
+          hienThiThongBao(`❌ ${err.message || 'Lỗi khi đặt bàn'}`, 'error');
+        }
+      } catch (err) {
+        hienThiThongBao('❌ Kết nối thất bại', 'error');
+      } finally {
+        btn.disabled = false;
+        text.textContent = 'Đặt bàn ngay';
+      }
+    });
+
+    window.onload = () => {
+      layDanhSachDatBan();
+      layDanhSachBanAn();
+      setInterval(capNhatTrangThaiBan, 60000);
+    };
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) capNhatTrangThaiBan();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quản lý Phản hồi</title>
+  <link rel="stylesheet" href="../sidebar.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #e9f1fb;
+      margin-left: 300px;
+      padding: 30px;
+    }
+
+    
+    table {
+      width: 1300px;
+      border-collapse: separate;
+      border-spacing: 0 10px;
+    }
+
+    th {
+      text-align: center;
+      background-color: #6cc3fd;
+      color: white;
+      padding: 12px;
+    }
+
+    tbody tr:nth-child(even) td {
+      background-color: #cbe6f5;
+    }
+
+    tbody tr:nth-child(odd) td {
+      background-color: white;
+    }
+
+    td {
+      padding: 15px;
+      text-align: center;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    button {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 16px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .delete-btn {
+      background-color: #e74c3c;
+    }
+
+    .delete-btn:hover {
+      background-color: #c0392b;
+    }
+
+    .error-row {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div id="sidebar-container"></div>
+
+  <header>
+    
+  </header>
+
+  <main>
+    <table id="feedbackTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Khách hàng</th>
+          <th>Nội dung</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody id="feedbackBody">
+        <tr><td colspan="4">Đang tải dữ liệu...</td></tr>
+      </tbody>
+    </table>
+  </main>
+
+  <script>
+    // Tải sidebar
+    fetch('../sidebar.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('sidebar-container').innerHTML = html;
+        const basePath = window.location.pathname.includes('/pages/') ? '../' : './';
+        document.querySelectorAll('.sidebar a').forEach(link => {
+          const href = link.getAttribute('data-href');
+          if (href) link.setAttribute('href', basePath + href);
+        });
+      });
+
+    // Tải dữ liệu phản hồi
+    window.onload = () => {
+      const tbody = document.getElementById("feedbackBody");
+
+      function fetchFeedbacks() {
+        fetch("/api/feedbacks/")
+          .then(res => {
+            if (!res.ok) throw new Error("Lỗi khi kết nối đến API");
+            return res.json();
+          })
+          .then(data => renderFeedbacks(data))
+          .catch(err => {
+            console.error("❌ Lỗi:", err);
+            tbody.innerHTML = '<tr><td colspan="4" class="error-row">Không thể tải dữ liệu phản hồi</td></tr>';
+          });
+      }
+
+      function renderFeedbacks(data) {
+        if (!Array.isArray(data) || data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4">Chưa có phản hồi nào</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = "";
+        data.forEach(item => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${item.PhanHoiID}</td>
+            <td>${item.HoTenKhachHang || '(Không rõ)'}</td>
+            <td>${item.NoiDung}</td>
+            <td>
+              <button class="delete-btn" onclick="deleteFeedback(${item.PhanHoiID})">Xóa</button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+
+      // Hàm xóa phản hồi
+      window.deleteFeedback = (id) => {
+        if (confirm("Bạn có chắc chắn muốn xoá phản hồi này?")) {
+          fetch(`/api/feedbacks/${id}`, { method: "DELETE" })
+            .then(res => res.json())
+            .then(data => {
+              alert(data.message);
+              fetchFeedbacks(); // Reload lại bảng
+            })
+            .catch(err => {
+              console.error("❌ Lỗi khi xóa phản hồi:", err);
+              alert("Không thể xoá phản hồi");
+            });
+        }
+      };
+
+      // Gọi lần đầu
+      fetchFeedbacks();
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản lý Bàn ăn</title>
+  <link rel="stylesheet" href="../sidebar.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin-left: 50px;
+      background: #e9f1fb;
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .main-content {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    button {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    button:hover {
+      background: #2980b9;
+    }
+
+    table {
+      width: 1200px;
+      border-collapse: separate;
+      border-spacing: 0 12px;
+    }
+
+    th {
+      background-color: #3498db;
+      color: white;
+      padding: 12px;
+      border-radius: 10px 10px 0 0;
+    }
+
+    td {
+      background: white;
+      padding: 10px;
+      text-align: center;
+      border-radius: 0 0 10px 10px;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+
+    .modal {
+      background: #fff;
+      padding: 20px;
+      border-radius: 16px;
+      width: 300px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .modal input {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+
+    .modal button {
+      margin-top: 10px;
+      margin-right: 10px;
+    }
+
+    .btn-red {
+      background: #e74c3c;
+    }
+
+    .btn-red:hover {
+      background: #c0392b;
+    }
+  </style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+
+  <div class="main-content">
+    
+    <button onclick="showAddModal()">➕ Thêm bàn</button>
+
+    <!-- Modal thêm -->
+    <div class="modal-overlay" id="addModal">
+      <div class="modal">
+        <form id="addForm">
+          <h3>Thêm Bàn mới</h3>
+          <input type="number" id="soBan" placeholder="Số bàn" required />
+          <input type="text" id="trangThai" placeholder="Trạng thái" required />
+          <button type="submit">✅ Lưu</button>
+          <button type="button" class="btn-red" onclick="hideAddModal()">❌ Hủy</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal sửa -->
+    <div class="modal-overlay" id="editModal">
+      <div class="modal">
+        <form id="editForm">
+          <h3>Cập nhật Trạng thái</h3>
+          <input type="hidden" id="editID" />
+          <input type="text" id="editTrangThai" placeholder="Trạng thái mới" required />
+          <button type="submit">✅ Cập nhật</button>
+          <button type="button" class="btn-red" onclick="hideEditModal()">❌ Hủy</button>
+        </form>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Số Bàn</th>
+          <th>Trạng Thái</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr><td colspan="4">Đang tải dữ liệu...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Load sidebar
+    fetch("../sidebar.html")
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById("sidebar-container").innerHTML = html;
+        const basePath = window.location.pathname.includes('/pages/') ? '../' : './';
+        document.querySelectorAll('.sidebar a').forEach(link => {
+          const href = link.getAttribute('data-href');
+          if (href) link.setAttribute('href', basePath + href);
+        });
+      });
+
+    const tbody = document.getElementById("tableBody");
+
+    function fetchTables() {
+      fetch('/api/banan/')
+        .then(res => res.json())
+        .then(data => {
+          tbody.innerHTML = '';
+          if (!data.length) {
+            tbody.innerHTML = '<tr><td colspan="4">Không có bàn nào</td></tr>';
+            return;
+          }
+          data.forEach(ban => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${ban.BanAnID}</td>
+              <td>${ban.SoBan}</td>
+              <td>${ban.TrangThai}</td>
+              <td>
+                <button onclick="showEditModal(${ban.BanAnID}, '${ban.TrangThai.replace(/'/g, "\\'")}')">✏️ Sửa</button>
+                <button class="btn-red" onclick="deleteTable(${ban.BanAnID})">🗑️ Xoá</button>
+              </td>
+            `;
+            tbody.appendChild(row);
+          });
+        })
+        .catch(() => {
+          tbody.innerHTML = '<tr><td colspan="4" class="error">Không thể tải dữ liệu bàn ăn</td></tr>';
+        });
+    }
+
+    function showAddModal() {
+      document.getElementById("addModal").style.display = "flex";
+    }
+
+    function hideAddModal() {
+      document.getElementById("addForm").reset();
+      document.getElementById("addModal").style.display = "none";
+    }
+
+    function showEditModal(id, status) {
+      document.getElementById("editID").value = id;
+      document.getElementById("editTrangThai").value = status;
+      document.getElementById("editModal").style.display = "flex";
+    }
+
+    function hideEditModal() {
+      document.getElementById("editForm").reset();
+      document.getElementById("editModal").style.display = "none";
+    }
+
+    document.getElementById("addForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const soBan = parseInt(document.getElementById("soBan").value);
+      const trangThai = document.getElementById("trangThai").value.trim();
+
+      if (isNaN(soBan) || !trangThai) {
+        alert("Vui lòng nhập đầy đủ và hợp lệ");
+        return;
+      }
+
+      fetch('/api/banan/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ SoBan: soBan, TrangThai: trangThai })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message);
+        hideAddModal();
+        fetchTables();
+      });
+    });
+
+    document.getElementById("editForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const id = document.getElementById("editID").value;
+      const status = document.getElementById("editTrangThai").value.trim();
+
+      if (!status) {
+        alert("Vui lòng nhập trạng thái hợp lệ");
+        return;
+      }
+
+      fetch(`/api/banan/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ TrangThai: status })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message);
+        hideEditModal();
+        fetchTables();
+      });
+    });
+
+    function deleteTable(id) {
+      if (confirm("Bạn có chắc chắn muốn xoá bàn này không?")) {
+        fetch(`/api/banan/${id}`, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(data => {
+          alert(data.message);
+          fetchTables();
+        });
+      }
+    }
+
+    window.onload = fetchTables;
+  </script>
+</body>
+</html>

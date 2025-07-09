@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đăng nhập | Hệ Thống Quản Lý Nhà Hàng</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+  <link rel="stylesheet" href="login.css" />
+</head>
+<body>
+
+  <!-- Header giống trang chủ -->
+  <header>
+    <div class="container">
+      <h1>🍽️ Hệ Thống Quản Lý Nhà Hàng</h1>
+    </div>
+  </header>
+
+  <!-- Form login/signup -->
+  <div class="container-form" id="container">
+    <div class="form-container sign-up">
+      <form>
+        <h1>Tạo tài khoản</h1>
+        <div class="social-icons">
+          <a href="#" class="icon"><i class="fa-brands fa-google-plus-g"></i></a>
+          <a href="#" class="icon"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" class="icon"><i class="fa-brands fa-github"></i></a>
+          <a href="#" class="icon"><i class="fa-brands fa-linkedin-in"></i></a>
+        </div>
+        <span>hoặc đăng ký bằng email</span>
+        <input type="text" placeholder="Họ và tên" />
+        <input type="email" placeholder="Email" />
+        <input type="password" placeholder="Mật khẩu" />
+        <button type="button">Đăng ký</button>
+      </form>
+    </div>
+
+    <div class="form-container sign-in">
+      <form id="loginForm">
+        <h1>Đăng nhập</h1>
+        <div class="social-icons">
+          <a href="#" class="icon"><i class="fa-brands fa-google-plus-g"></i></a>
+          <a href="#" class="icon"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" class="icon"><i class="fa-brands fa-github"></i></a>
+          <a href="#" class="icon"><i class="fa-brands fa-linkedin-in"></i></a>
+        </div>
+        <span>hoặc sử dụng tài khoản email</span>
+        <input name="email" type="email" placeholder="Email" required />
+        <input name="password" type="password" placeholder="Mật khẩu" required />
+        <a href="#">Quên mật khẩu?</a>
+        <button type="submit">Đăng nhập</button>
+      </form>
+    </div>
+
+    <div class="toggle-container">
+      <div class="toggle">
+        <div class="toggle-panel toggle-left">
+          <h1>Chào mừng bạn trở lại!</h1>
+          <p>Đăng nhập để sử dụng toàn bộ tính năng</p>
+          <button class="hidden" id="login">Đăng nhập</button>
+        </div>
+        <div class="toggle-panel toggle-right">
+          <h1>Xin chào bạn mới!</h1>
+          <p>Hãy đăng ký tài khoản để bắt đầu sử dụng</p>
+          <button class="hidden" id="register">Đăng ký</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer giống trang chủ -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 - Hệ Thống Quản Lý Nhà Hàng | Đồ án môn học</p>
+    </div>
+  </footer>
+
+  <!-- Script xử lý -->
+  <script>
+    const container = document.getElementById('container');
+    const registerBtn = document.getElementById('register');
+    const loginBtn = document.getElementById('login');
+
+    registerBtn.addEventListener('click', () => {
+      container.classList.add("active");
+    });
+
+    loginBtn.addEventListener('click', () => {
+      container.classList.remove("active");
+    });
+
+    // 🔐 Đăng nhập với tài khoản mặc định
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const email = this.email.value.trim();
+      const password = this.password.value.trim();
+
+      const defaultEmail = "admin@gmail.com";
+      const defaultPassword = "1";
+
+      if (email === defaultEmail && password === defaultPassword) {
+        alert("Đăng nhập thành công!");
+        window.location.href = "admin.html";
+      } else {
+        alert("Tài khoản hoặc mật khẩu không đúng!");
+      }
+    });
+  </script>
+</body>
+</html>

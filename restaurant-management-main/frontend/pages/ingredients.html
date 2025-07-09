@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quản lý kho Nguyên liệu</title>
+  <link rel="stylesheet" href="../sidebar.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #e9f1fb;
+      margin-left: 50px;
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    #sidebar-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 220px;
+      height: 100%;
+    }
+
+    .main-content {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    #searchIngredient {
+      display: block;
+      margin-left: 250px;  
+      margin-bottom: 20px;
+      padding: 10px 20px;
+      width: 70%;
+      border-radius: 50px;
+      border: 1px solid #ccc;
+      outline: none;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    #showAddFormBtn {
+      background-color: #289f2e;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      margin-bottom: 15px;
+      display: block;
+      margin-left: 500px;
+    }
+
+    #showAddFormBtn:hover {
+      background-color: #18b464;
+    }
+
+    form {
+      display: none;
+      text-align: center;
+      margin-bottom: 30px;
+      background: white;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    form h2 {
+      margin-bottom: 20px;
+    }
+
+    form input,
+    form select {
+      padding: 10px;
+      margin: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      width: 200px;
+    }
+
+    form button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      color: white;
+    }
+
+    #addForm button {
+      background-color: #3498db;
+    }
+    #addForm button:hover {
+      background-color: #2980b9;
+    }
+
+    #editForm button {
+      background-color: #ff9800;
+    }
+    #editForm button:hover {
+      background-color: #f57c00;
+    }
+
+    .btn-edit {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-right: 5px;
+    }
+
+    .btn-edit:hover {
+      background-color: #2980b9;
+    }
+
+    .btn-delete {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn-delete:hover {
+      background-color: #c0392b;
+    }
+
+    table {
+      width: 1200px;
+      border-collapse: separate;
+      border-spacing: 0 10px;
+      margin: auto;
+    }
+
+    th {
+      background-color: #3498db;
+      color: white;
+      padding: 12px;
+      text-align: center;
+      border-radius: 12px 12px 0 0;
+    }
+
+    td {
+      background-color: white;
+      padding: 15px;
+      text-align: center;
+      border-radius: 0 0 12px 12px;
+    }
+
+    tbody tr {
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+
+    tbody tr:nth-child(even) td {
+      background-color: #f0f4f9;
+    }
+  </style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+
+  <div class="main-content">
+    <input type="text" id="searchIngredient" placeholder="🔍 Tìm nguyên liệu..." />
+    <button id="showAddFormBtn">➕ Thêm nguyên liệu</button>
+
+    <form id="addForm">
+      <h2>Thêm nguyên liệu</h2>
+      <input type="text" id="newName" placeholder="Tên nguyên liệu" required />
+      <input type="text" id="newDonVi" placeholder="Đơn vị" required />
+      <input type="number" id="newSoLuong" placeholder="Số lượng" required />
+      <select id="newKhoID" required>
+        <option value="">-- Chọn kho --</option>
+        <option value="1">Kho Bếp chính</option>
+        <option value="2">Kho Pha chế</option>
+        <option value="3">Kho Dự phòng</option>
+        <option value="4">Kho Thực phẩm tươi</option>
+        <option value="5">Kho Gia vị</option>
+      </select>
+      <button type="submit">Thêm</button>
+    </form>
+
+    <form id="editForm">
+      <h2>Sửa nguyên liệu</h2>
+      <input type="hidden" id="editID" />
+      <input type="text" id="editName" placeholder="Tên nguyên liệu" required />
+      <input type="text" id="editDonVi" placeholder="Đơn vị" required />
+      <input type="number" id="editSoLuong" placeholder="Số lượng" required />
+      <select id="editKhoID" required>
+        <option value="">-- Chọn kho --</option>
+        <option value="1">Kho Bếp chính</option>
+        <option value="2">Kho Pha chế</option>
+        <option value="3">Kho Dự phòng</option>
+        <option value="4">Kho Thực phẩm tươi</option>
+        <option value="5">Kho Gia vị</option>
+      </select>
+      <button type="submit">Lưu cập nhật</button>
+    </form>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tên nguyên liệu</th>
+          <th>Đơn vị</th>
+          <th>Số lượng</th>
+          <th>Kho</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody id="ingredientBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    fetch('../sidebar.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('sidebar-container').innerHTML = html;
+        const basePath = window.location.pathname.includes('/pages/') ? '../' : './';
+        document.querySelectorAll('.sidebar a').forEach(link => {
+          const href = link.getAttribute('data-href');
+          if (href) link.setAttribute('href', basePath + href);
+        });
+      });
+
+    let allData = [];
+
+    function loadData() {
+      fetch("/api/kho/tatca")
+        .then(res => res.json())
+        .then(data => {
+          allData = [];
+          data.forEach(kho => {
+            kho.NguyenLieu.forEach(nl => {
+              allData.push({ ...nl, TenKho: kho.TenKho, KhoID: kho.KhoID });
+            });
+          });
+          renderTable(allData);
+        });
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById("ingredientBody");
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6">Không có nguyên liệu nào</td></tr>';
+        return;
+      }
+      tbody.innerHTML = '';
+      data.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.NguyenLieuID}</td>
+          <td>${item.TenNguyenLieu}</td>
+          <td>${item.DonVi}</td>
+          <td>${item.SoLuong}</td>
+          <td>${item.TenKho || ''}</td>
+          <td>
+            <button class="btn-edit" onclick='openEditForm(${JSON.stringify(item)})'>Sửa</button>
+            <button class="btn-delete" onclick='deleteIngredient(${item.NguyenLieuID})'>Xóa</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    document.getElementById("searchIngredient").addEventListener("input", () => {
+      const keyword = document.getElementById("searchIngredient").value.toLowerCase();
+      const filtered = allData.filter(item => item.TenNguyenLieu.toLowerCase().includes(keyword));
+      renderTable(filtered);
+    });
+
+    document.getElementById("showAddFormBtn").addEventListener("click", () => {
+      const form = document.getElementById("addForm");
+      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    });
+
+    document.getElementById("addForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const payload = {
+        TenNguyenLieu: document.getElementById("newName").value,
+        DonVi: document.getElementById("newDonVi").value,
+        SoLuong: +document.getElementById("newSoLuong").value,
+        KhoID: +document.getElementById("newKhoID").value
+      };
+      fetch("/api/kho/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(msg => {
+        alert(msg.message);
+        loadData();
+        e.target.reset();
+        document.getElementById("addForm").style.display = 'none';
+      });
+    });
+
+    function openEditForm(item) {
+      document.getElementById("editID").value = item.NguyenLieuID;
+      document.getElementById("editName").value = item.TenNguyenLieu;
+      document.getElementById("editDonVi").value = item.DonVi;
+      document.getElementById("editSoLuong").value = item.SoLuong;
+      document.getElementById("editKhoID").value = item.KhoID;
+      document.getElementById("editForm").style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.getElementById("editForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const id = document.getElementById("editID").value;
+      const payload = {
+        TenNguyenLieu: document.getElementById("editName").value,
+        DonVi: document.getElementById("editDonVi").value,
+        SoLuong: +document.getElementById("editSoLuong").value,
+        KhoID: +document.getElementById("editKhoID").value
+      };
+      fetch(`/api/kho/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(msg => {
+        alert(msg.message);
+        loadData();
+        document.getElementById("editForm").style.display = 'none';
+      });
+    });
+
+    function deleteIngredient(id) {
+      if (!confirm("Bạn có chắc muốn xoá nguyên liệu này?")) return;
+      fetch(`/api/kho/${id}`, { method: "DELETE" })
+        .then(res => res.json())
+        .then(msg => {
+          alert(msg.message);
+          loadData();
+        });
+    }
+
+    window.onload = loadData;
+  </script>
+</body>
+</html>
