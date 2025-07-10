@@ -9,7 +9,7 @@
     body {
       font-family: Arial, sans-serif;
       background: #e9f1fb;
-      margin-left: 220px;
+      margin-left: 50px;
       padding: 30px;
     }
     h1 {
@@ -85,7 +85,7 @@
       transform: translateY(-2px);
     }
     table {
-      width: 100%;
+      width: 1200px;
       border-collapse: separate;
       border-spacing: 0 15px;
     }
@@ -202,7 +202,7 @@
   <div id="sidebar-container"></div>
 
   <div class="main-content">
-    <h1>Quản lý Đặt bàn</h1>
+    
 
     <input type="text" id="searchReservation" placeholder="🔍 Tìm theo tên khách..." />
 
@@ -352,6 +352,22 @@
         }
       });
     }
+    // Gọi cập nhật trạng thái bàn từ server
+function goiCapNhatTrangThaiBanServer() {
+  fetch('/api/banan/cap-nhat-trang-thai', {
+    method: 'POST'
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log('🟢 Cập nhật trạng thái:', data.message);
+
+      // Gọi thêm GET nếu muốn lấy lại danh sách bàn (tuỳ trường hợp)
+      // fetchDanhSachBan();
+    })
+    .catch(error => {
+      console.error('🔴 Lỗi khi cập nhật trạng thái bàn:', error);
+    });
+}
 
     async function layDanhSachDatBan(tuKhoa = '') {
       try {
