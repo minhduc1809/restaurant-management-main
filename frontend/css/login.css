@@ -9,9 +9,16 @@
 
 /* ----------- Body và Layout ---------- */
 body {
-  background: linear-gradient(135deg, #667eea 0%, #99aab6 100%);
-  display: block;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
+}
+
+/* Main content wrapper */
+main {
+  flex: 1;
+  padding: 20px 0;
 }
 
 /* Header & Footer với tone xanh dương */
@@ -20,6 +27,12 @@ header, footer {
   padding: 20px 0;
   text-align: center;
   box-shadow: 0 4px 15px rgba(30, 60, 114, 0.3);
+  flex-shrink: 0;
+}
+
+footer {
+  background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+  margin-top: auto;
 }
 
 header .container, footer .container {
@@ -53,6 +66,7 @@ header h1 {
 
 footer {
   background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+  margin-top: auto;
 }
 
 footer p {
@@ -72,6 +86,7 @@ footer p {
   overflow: hidden;
   min-height: 480px;
   border: 1px solid rgba(79, 172, 254, 0.2);
+  flex-shrink: 0;
 }
 
 /* Nội dung trong form */
